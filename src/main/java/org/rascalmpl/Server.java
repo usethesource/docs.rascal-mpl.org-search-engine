@@ -238,7 +238,7 @@ public class Server extends NanoHTTPD {
         } catch (IOException e) {
         }
         byte[] data = target.toByteArray();
-        return newFixedLengthResponse(Status.OK, "application/json", new ByteArrayInputStream(data), data.length);
+        return newFixedLengthResponse(Status.OK, "application/json; charset=utf-8", new ByteArrayInputStream(data), data.length);
     }
 
     private static void appendJsonResult(Document hitDoc, JsonWriter w) throws IOException {
