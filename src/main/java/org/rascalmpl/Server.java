@@ -199,10 +199,11 @@ public class Server extends NanoHTTPD {
     }
 
     private Response search(String uri, String query) {
-        return search(uri.startsWith("/unstable") ? unstableSearcher : stableSearcher, query);
+        boolean unstable = uri.startsWith("/unstable");
+        return search(unstable, unstable ? unstableSearcher : stableSearcher, query);
     }
 
-    private Response search(ClosingWrapper<IndexSearcher> searcher, String query) {
+    private Response search(boolean unstable, ClosingWrapper<IndexSearcher> searcher, String query) {
         try {
             query = escapeForQuery(query);
             MultiFieldQueryParser parser = new MultiFieldQueryParser(new String[] {"index", "synopsis", "doc"}, this.fieldAnalyzer);
@@ -210,10 +211,10 @@ public class Server extends NanoHTTPD {
             if (parsedQuery != null) {
                 TopDocs results = searcher.get().search(parsedQuery, 25);
                 if (results != null ) {
-                    return translateResult(results.scoreDocs, searcher.get());
+                    return translateResult(unstable, results.scoreDocs, searcher.get());
                 }
                 else {
-                    return translateResult(new ScoreDoc[0], searcher.get());
+                    return translateResult(unstable, new ScoreDoc[0], searcher.get());
                 }
             }
             else {
@@ -224,14 +225,14 @@ public class Server extends NanoHTTPD {
         }
     }
 
-    private static Response translateResult(ScoreDoc[] results, IndexSearcher searcher) {
+    private static Response translateResult(boolean unstable, ScoreDoc[] results, IndexSearcher searcher) {
         ByteArrayOutputStream target = new ByteArrayOutputStream();
         try (JsonWriter w = new JsonWriter(new OutputStreamWriter(target, StandardCharsets.UTF_8))) {
             w.beginObject();
             w.name("results");
             w.beginArray();
             for (ScoreDoc r : results) {
-                appendJsonResult(searcher.doc(r.doc), w);
+                appendJsonResult(unstable, searcher.doc(r.doc), w);
             }
             w.endArray();
             w.endObject();
@@ -241,14 +242,14 @@ public class Server extends NanoHTTPD {
         return newFixedLengthResponse(Status.OK, "application/json; charset=utf-8", new ByteArrayInputStream(data), data.length);
     }
 
-    private static void appendJsonResult(Document hitDoc, JsonWriter w) throws IOException {
+    private static void appendJsonResult(boolean unstable, Document hitDoc, JsonWriter w) throws IOException {
         if (hitDoc != null) {
             w.beginObject();
             String name = hitDoc.get("name");
             w.name("name");
             w.value(name);
             w.name("url");
-            w.value(makeURL(name));
+            w.value(makeURL(unstable, name));
             w.name("text");
             w.value(getField(hitDoc, "synopsis"));
             String signature = getField(hitDoc, "signature");
@@ -260,8 +261,9 @@ public class Server extends NanoHTTPD {
         }
     }
 
-    private static String makeURL(String conceptName) {
+    private static String makeURL(boolean unstable, String conceptName) {
         StringWriter w = new StringWriter();
+         w.append(unstable ? "/unstable" : "/stable");
         appendURL(w, conceptName);
         return w.toString();
     }
