@@ -8,6 +8,12 @@
   <name>docs-search-updater</name>
   <packaging>jar</packaging>
 
+  <scm>
+    <developerConnection>scm:git:ssh://git@github.com/cwi-swat/docs-site-search-updater.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
