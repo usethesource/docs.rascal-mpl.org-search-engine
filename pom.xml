@@ -12,12 +12,13 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <lucene-version>6.1.0</lucene-version><!-- try to keep the same as rascal -->
+    <lucene-version>7.5.0</lucene-version><!-- try to keep the same as rascal -->
   </properties>
   <build>
     <plugins>
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>
+      <version>3.2.0</version>
       <artifactId>maven-shade-plugin</artifactId>
       <executions>
         <execution>

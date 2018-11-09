@@ -15,6 +15,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -205,9 +206,7 @@ public class Server extends NanoHTTPD {
 
     private Response search(boolean unstable, ClosingWrapper<IndexSearcher> searcher, String query) {
         try {
-            query = escapeForQuery(query);
-            MultiFieldQueryParser parser = new MultiFieldQueryParser(new String[] {"index", "synopsis", "doc"}, this.fieldAnalyzer);
-            Query parsedQuery = parser.parse(query);
+            Query parsedQuery = buildQueryParser().parse(escapeForQuery(query));
             if (parsedQuery != null) {
                 TopDocs results = searcher.get().search(parsedQuery, 25);
                 if (results != null ) {
@@ -223,6 +222,19 @@ public class Server extends NanoHTTPD {
         } catch (IOException | ParseException e) {
             return newFixedLengthResponse(Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Error searching: " + e.getMessage());
         }
+    }
+
+    private static final String[] fields = new String[] {"index", "synopsis", "doc"};
+    private static final Map<String, Float> boosts;
+    static {
+        boosts = new HashMap<>();
+        boosts.put("index", 2f);
+        boosts.put("synopsis", 2f);
+    }
+
+
+    private MultiFieldQueryParser buildQueryParser() {
+        return new MultiFieldQueryParser(fields, this.fieldAnalyzer, boosts);
     }
 
     private static Response translateResult(boolean unstable, ScoreDoc[] results, IndexSearcher searcher) {
