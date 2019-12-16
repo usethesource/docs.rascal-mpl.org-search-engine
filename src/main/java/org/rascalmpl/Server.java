@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -183,7 +184,7 @@ public class Server extends NanoHTTPD {
             if (session.getMethod() == Method.GET && session.getUri().endsWith("/search")) {
                 List<String> query = session.getParameters().get("searchFor");
                 if (query != null && query.size() == 1) {
-                    return search(session.getUri(), query.get(0));
+                    return search(session.getUri(), URLDecoder.decode(query.get(0), "UTF-8"));
                 } else {
                     return newFixedLengthResponse(Status.BAD_REQUEST, MIME_PLAINTEXT, "Missing searchFor parameter");
                 }
@@ -298,7 +299,7 @@ public class Server extends NanoHTTPD {
     }
 
     private static final Pattern BAD_QUERY_CHARS =
-            Pattern.compile("([+\\-!(){}\\[\\]\\^\"~*?:\\\\/]|(&&)|(\\|\\|))");
+            Pattern.compile("([" + Pattern.quote("+\\-!(){}[]^\"~*?:/") + "]|(&&)|(\\|\\|))");
 
     private static String escapeForQuery(String s) {
         return BAD_QUERY_CHARS.matcher(s.toLowerCase()).replaceAll("\\\\$1");
