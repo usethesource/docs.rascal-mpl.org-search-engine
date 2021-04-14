@@ -158,6 +158,7 @@ public class Server extends NanoHTTPD {
                         key.reset(); // signal that we want more events
                     }
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                     return;
                 }
 
