@@ -2,13 +2,13 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.rascalmpl</groupId>
-  <artifactId>docs-search-updater</artifactId>
+  <artifactId>docs-search-server</artifactId>
   <version>2.1.0-SNAPSHOT</version>
   <name>docs-search-updater</name>
   <packaging>jar</packaging>
 
   <scm>
-    <developerConnection>scm:git:ssh://git@github.com/cwi-swat/docs-site-search-updater.git</developerConnection>
+    <developerConnection>scm:git:ssh://git@github.com:usethesource/docs.rascal-mpl.org-search-engine.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
 
@@ -40,6 +40,27 @@
           </configuration>
         </execution>
       </executions>
+    </plugin>
+    <plugin>
+      <groupId>com.google.cloud.tools</groupId>
+      <artifactId>jib-maven-plugin</artifactId>
+      <version>3.0.0</version>
+      <configuration>
+        <to>
+          <image>ghcr.io/usethesource/rascal-docs-search</image>
+        </to>
+        <from>
+          <image>adoptopenjdk:11</image>
+        </from>
+        <container>
+          <args>/site</args>
+          <ports>9999</ports>
+          <user>nobody</user>
+          <volumes>
+            <volume>/site</volume>
+          </volumes>
+        </container>
+      </configuration>
     </plugin>
     </plugins>
   </build>
