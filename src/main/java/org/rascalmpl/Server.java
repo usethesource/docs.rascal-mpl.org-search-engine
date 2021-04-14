@@ -49,7 +49,7 @@ public class Server extends NanoHTTPD {
     private final Analyzer fieldAnalyzer;
 
     public Server(Path serverRoot) {
-        super("localhost", 9999);
+        super("0.0.0.0", 9999);
         this.serverRoot = serverRoot;
         currentVersion = readCurrentVersion();
         installFileWatch();
@@ -111,15 +111,20 @@ public class Server extends NanoHTTPD {
 
     private void buildSearcher() {
         Path searchDir = serverRoot.resolve("site-" + currentVersion).resolve("search");
+        stableSearcher = safeBuild(searchDir, "stable");
+        unstableSearcher = safeBuild(searchDir, "unstable");
+        System.out.println("New indexes loaded");
+    }
+
+    private ClosingWrapper<IndexSearcher> safeBuild(Path root, String origin) {
         try {
-            stableSearcher = buildSearcher(buildIndex(searchDir.resolve("stable")));
-            unstableSearcher = buildSearcher(buildIndex(searchDir.resolve("unstable")));
-            System.out.println("New indexes loaded");
+            return buildSearcher(buildIndex(root.resolve(origin)));
         } catch (IOException e) {
             synchronized(System.err) {
                 System.err.println("Error loading the searchers:" + e.getMessage());
                 e.printStackTrace(System.err);
             }
+            return null;
         }
     }
 
@@ -207,6 +212,9 @@ public class Server extends NanoHTTPD {
     }
 
     private Response search(boolean unstable, ClosingWrapper<IndexSearcher> searcher, String query) {
+        if (searcher == null) {
+            return newFixedLengthResponse(Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Error initializing index");
+        }
         try {
             Query parsedQuery = buildQueryParser().parse(escapeForQuery(query));
             if (parsedQuery != null) {

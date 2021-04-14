@@ -25,3 +25,5 @@ target/
 .classpath
 .settings/
 .project
+
+site-*/
