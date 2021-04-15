@@ -27,4 +27,4 @@ jobs:
         env:
           REGISTRY_USERNAME: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-        run: mvn jib:build
+        run: mvn -B jib:build
